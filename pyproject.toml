@@ -24,9 +24,9 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/waketzheng/fastdfs-client-python"
-repository = "https://github.com/waketzheng/fastdfs-client-python"
-"Bug Tracker" = "https://github.com/waketzheng/fastdfs-client-python/issues/"
+homepage = "https://github.com/waketzheng/fastdfs-client"
+repository = "https://github.com/waketzheng/fastdfs-client"
+"Bug Tracker" = "https://github.com/waketzheng/fastdfs-client/issues/"
 
 [tool.poetry]
 version = "0.0.0"  # Managed by poetry-dynamic-versioning

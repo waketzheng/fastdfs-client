@@ -1,10 +1,10 @@
-# fastdfs-client-python
+# fastdfs-client
 ![Python Versions](https://img.shields.io/pypi/pyversions/fastdfs-client)
 [![LatestVersionInPypi](https://img.shields.io/pypi/v/fastdfs-client.svg?style=flat)](https://pypi.python.org/pypi/fastdfs-client)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/pre-commit/pre-commit/main.svg)](https://github.com/pre-commit/pre-commit)
-[![GithubActionResult](https://github.com/waketzheng/asyncur/workflows/ci/badge.svg)](https://github.com/waketzheng/asyncur/actions?query=workflow:ci)
+[![GithubActionResult](https://github.com/waketzheng/fastdfs-client/workflows/ci/badge.svg)](https://github.com/waketzheng/fastdfs-client/actions?query=workflow:ci)
 
 FastDFS Python client
 
