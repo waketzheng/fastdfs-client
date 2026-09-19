@@ -55,7 +55,7 @@ jobs:
       - name: Pull submodule justfile
         run: just
       - name: Install deps
-        run: just deps
+        run: just install
       - name: Check code style and Type Hint
         run: uvx prek run --all-files --hook-stage manual
       - name: Test with pytest
