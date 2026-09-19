@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import annotations
 
 import configparser
@@ -17,7 +16,7 @@ __os_sep__ = "/" if platform.system() == "Windows" else os.sep
 logger = logging.getLogger("fastapi-cdn-host")
 
 
-def appromix(size: int | float, base=0) -> str:
+def appromix(size: float, base=0) -> str:
     """Conver bytes stream size to human-readable format.
 
     :param size: int, bytes stream size
@@ -29,7 +28,7 @@ def appromix(size: int | float, base=0) -> str:
         raise ValueError("[-] Error: number must be non-negative.")
     for suffix in SUFFIX[base:]:
         if size < multiples:
-            return "{0:.2f}{1}".format(size, suffix)
+            return f"{size:.2f}{suffix}"
         size /= float(multiples)
     raise ValueError("[-] Error: number too big.")
 
@@ -39,7 +38,7 @@ def get_file_ext_name(filename: str, double_ext=True) -> str:
     if len(li) <= 1 or __os_sep__ in li[-1]:
         return ""
     if double_ext and len(li) > 2 and __os_sep__ not in li[-2]:
-        return "%s.%s" % (li[-2], li[-1])
+        return f"{li[-2]}.{li[-1]}"
     return li[-1]
 
 
@@ -51,7 +50,7 @@ class FastdfsConfigParser(RawConfigParser):
     section, which defaults to '__config__'
     """
 
-    def __init__(self, default_section=None, *args, **kwargs):
+    def __init__(self, default_section=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self._default_section = ""
@@ -60,7 +59,7 @@ class FastdfsConfigParser(RawConfigParser):
     def get_default_section(self):
         return self._default_section
 
-    def set_default_section(self, section):
+    def set_default_section(self, section) -> None:
         self.add_section(section)
 
         # move all values from the previous default section to the new one
@@ -84,7 +83,7 @@ class FastdfsConfigParser(RawConfigParser):
             try:
                 with open(filename) as fp:
                     self.readfp(fp)
-            except IOError:
+            except OSError:
                 logger.debug(f"FileNotFound: {filename}")
                 continue
             else:
@@ -104,7 +103,7 @@ class FastdfsConfigParser(RawConfigParser):
 
         return self._read(stream, stream.name)
 
-    def write(self, fp, space_around_delimiters=True):
+    def write(self, fp, space_around_delimiters=True) -> None:
         # Write the items from the default section manually and then remove them
         # from the data. They'll be re-added later.
         section = str(self._default_section)
@@ -113,7 +112,7 @@ class FastdfsConfigParser(RawConfigParser):
             self.remove_section(section)
 
             for key, value in default_section_items:
-                fp.write("{0} = {1}\n".format(key, value))
+                fp.write(f"{key} = {value}\n")
 
             fp.write("\n")
         except configparser.NoSectionError:
@@ -125,7 +124,7 @@ class FastdfsConfigParser(RawConfigParser):
         for key, value in default_section_items:
             self.set(section, key, value)
 
-    def _read(self, fp, fpname):
+    def _read(self, fp, fpname) -> None:
         """Parse a sectioned setup file.
 
         The sections in setup file contains a title line at the top,
@@ -154,7 +153,7 @@ class FastdfsConfigParser(RawConfigParser):
             if line[0].isspace() and cursect is not None and optname:
                 value = line.strip()
                 if value:
-                    cursect[optname] = "%s\n%s" % (cursect[optname], value)
+                    cursect[optname] = f"{cursect[optname]}\n{value}"
             # a section header or option header?
             else:
                 # is it a section header?
@@ -209,7 +208,9 @@ class FastdfsConfigParser(RawConfigParser):
             raise e
 
 
-def split_remote_fileid(remote_file_id: str, maybe_url=True) -> tuple[str, str] | None:
+def split_remote_fileid(
+    remote_file_id: str, maybe_url: bool = True
+) -> tuple[str, str] | None:
     """
     Splite remote_file_id to (group_name, remote_file_name)
     arguments:
@@ -230,10 +231,10 @@ def fdfs_check_file(filename: str) -> tuple[bool, str]:
     errmsg = ""
     if not os.path.isfile(filename):
         ret = False
-        errmsg = "[-] Error: %s is not a file." % filename
+        errmsg = f"[-] Error: {filename} is not a file."
     elif not stat.S_ISREG(os.stat(filename).st_mode):
         ret = False
-        errmsg = "[-] Error: %s is not a regular file." % filename
+        errmsg = f"[-] Error: {filename} is not a regular file."
     return (ret, errmsg)
 
 

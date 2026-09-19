@@ -7,7 +7,7 @@ import re
 import socket
 from functools import cached_property
 from pathlib import Path
-from typing import Annotated, Type, TypedDict, Union, cast, get_type_hints
+from typing import Annotated, TypedDict, cast, get_type_hints
 
 from .connection import ConnectionPool
 from .exceptions import ConfigError, DataError, ResponseError
@@ -77,11 +77,11 @@ def get_tracker_conf(conf_path="client.conf") -> dict:
     return tracker
 
 
-TrackersConfType = Union[
-    Annotated[Union[str, Path], "filename of trackers.conf"],
-    Annotated[Union[dict, ConfigDict], "Config of trackers"],
-    Annotated[Union[tuple[str, ...], list[str]], "IP list or domain list"],
-]
+TrackersConfType = (
+    Annotated[str | Path, "filename of trackers.conf"]
+    | Annotated[dict | ConfigDict, "Config of trackers"]
+    | Annotated[tuple[str, ...] | list[str], "IP list or domain list"]
+)
 
 
 class BaseClient:
@@ -168,7 +168,7 @@ class AsyncDfsClient(BaseClient):
         ```
         """
         store_serv = await TrackerClient.get_storage_server(self.random_host())
-        store = StorageClient(store_serv.ip_addr, store_serv.port, self.timeout)  # type:ignore
+        store = StorageClient(store_serv.ip_addr, store_serv.port, self.timeout)
         res = await store.upload_buffer(store_serv, content, suffix.lstrip("."))
         uri_path = res["Remote file_id"]  # 'group1/M00/00/00/eE..R458.jpg'
         return self._build_host(res["Storage IP"]) + uri_path
@@ -189,7 +189,7 @@ class AsyncDfsClient(BaseClient):
         url = https://example.com/group1/M00/00/00/eE0vIWZEgMCAFnaMAAABXbxaFk89563.jpeg'
         ret = await client.delete(url)
         print(ret)
-        # ('Delete file successed.', b'group1/M00/00/1B/eE0vIWaU9kyAVILJAAHM-px7j44359.py', b'120.77.47.33')
+        # ('msg', b'group1/M00/00/1B/eE0vIWaU9kyAVILJAAHM-px7j44359.py', b'ip')
         ```
         """
         maybe_url = True
@@ -224,7 +224,7 @@ class FastdfsClient(BaseClient):
     def __init__(
         self,
         trackers: TrackersConfType,
-        poolclass: Type[ConnectionPool] | None = None,
+        poolclass: type[ConnectionPool] | None = None,
         ip_mapping: dict[str, str] | None = None,
         ssl: bool = True,
     ) -> None:
@@ -235,7 +235,7 @@ class FastdfsClient(BaseClient):
 
     def __del__(self) -> None:
         try:
-            self.pool.destroy()  # type:ignore
+            self.pool.destroy()  # type:ignore[has-type]
             self.pool = None  # pragma: no cover
         except Exception as e:
             logger.debug(f"Failed to destroy: {e}")
@@ -376,7 +376,7 @@ class FastdfsClient(BaseClient):
             )
         except Exception as e:
             logger.exception(e)
-            raise e
+            raise
         ret_dict["Status"] = "Upload slave file successed."
         return ret_dict
 
@@ -694,12 +694,10 @@ class FastdfsClient(BaseClient):
             status = store.storage_set_metadata(
                 tc, store_serv, remote_filename, meta_dict
             )
-        except (ConnectionError, ResponseError, DataError):
-            raise
+        except (ConnectionError, ResponseError, DataError) as e:
+            raise RuntimeError(str(e)) from e
         if status == 2:
-            raise DataError(
-                "[-] Error: remote file %s does not exist." % remote_file_id
-            )
+            raise DataError(f"[-] Error: remote file {remote_file_id} does not exist.")
         elif status != 0:
             raise DataError("[-] Error: %d, %s" % (status, os.strerror(status)))
         ret_dict = {}
@@ -859,7 +857,7 @@ class FastdfsClient(BaseClient):
         )
 
     @property
-    def async_client(self) -> "AsyncDfsClient":
+    def async_client(self) -> AsyncDfsClient:
         return AsyncDfsClient(self.trackers, self.ip_mapping, self.ssl)
 
     async def upload(self, content: bytes, suffix=".jpg") -> str:

@@ -1,11 +1,11 @@
 from .client import AsyncDfsClient, FastdfsClient
 
 __version__ = "1.2.3"
-VERSION = tuple(map(int, __version__.split(".")))
+VERSION = tuple(map(int, __version__.split(".")))  # NOQA:RUF048
 
 
 __all__ = (
     "VERSION",
-    "FastdfsClient",
     "AsyncDfsClient",
+    "FastdfsClient",
 )

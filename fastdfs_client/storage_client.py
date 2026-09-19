@@ -57,9 +57,9 @@ def _send_data(conn, fp, buffer_size) -> int:
             tcp_send_data(conn, send_buffer)
         return send_size
     except ConnectionError as e:
-        raise ConnectionError("[-] Error while uploading file(%s)." % e.args) from e
-    except IOError as e:
-        raise DataError("[-] Error while reading local file(%s)." % e.args) from e
+        raise ConnectionError(f"[-] Error while uploading file({e.args}).") from e
+    except OSError as e:
+        raise DataError(f"[-] Error while reading local file({e.args}).") from e
 
 
 def tcp_send_file(conn, filename, buffer_size=1024):
@@ -143,10 +143,10 @@ def tcp_recv_file(conn, local_filename, file_size, buffer_size=1024):
                     f.flush()
                     flush_size = 0
             except ConnectionError as e:
-                msg = "[-] Error: while downloading file(%s)." % e.args
+                msg = f"[-] Error: while downloading file({e.args})."
                 raise ConnectionError(msg) from e
-            except IOError as e:
-                msg = "[-] Error: while writting local file(%s)." % e.args
+            except OSError as e:
+                msg = f"[-] Error: while writting local file({e.args})."
                 raise DataError(msg) from e
     return total_file_size
 
@@ -154,7 +154,8 @@ def tcp_recv_file(conn, local_filename, file_size, buffer_size=1024):
 class StorageClient:
     """
     The Class Storage_client for storage server.
-    Note: argument host_tuple of storage server ip address, that should be a single element.
+    Note: argument host_tuple of storage server ip address,
+    that should be a single element.
     """
 
     def __init__(self, host: str, port: int, timeout: int, *args) -> None:
@@ -166,9 +167,9 @@ class StorageClient:
         }
         self.pool = ConnectionPool(**conn_kwargs)
 
-    def __del__(self):
+    def __del__(self) -> None:
         try:
-            self.pool.destroy()  # type:ignore
+            self.pool.destroy()
             del self.pool
         except Exception as e:
             logger.debug(f"Failed to destroy: {e}")
@@ -176,7 +177,8 @@ class StorageClient:
     def update_pool(self, old_store_serv, new_store_serv, timeout=30) -> bool | None:
         """
         Update connection pool of storage client.
-        We need update connection pool of storage client, while storage server is changed.
+        We need update connection pool of storage client,
+        while storage server is changed.
         but if server not changed, we do nothing.
         """
         if old_store_serv.ip_addr == new_store_serv.ip_addr:
@@ -196,10 +198,10 @@ class StorageClient:
         tracker_client,
         store_serv,
         file_buffer,
-        file_size=None,
+        file_size: int | None = None,
         upload_type=None,
         meta_dict=None,
-        cmd=None,
+        cmd: int | None = None,
         master_filename=None,
         prefix_name=None,
         file_ext_name=None,
@@ -250,8 +252,8 @@ class StorageClient:
             if upload_slave
             else struct.calcsize(non_slave_fmt)
         )
-        th.pkg_len += file_size
-        th.cmd = cmd
+        th.pkg_len += file_size or 0
+        th.cmd = cmd  # type:ignore
         with self.pool.open_connection() as store_conn:
             th.send_header(store_conn)
             if upload_slave:
@@ -576,7 +578,7 @@ class StorageClient:
             group = store_serv.group_name.encode()
         else:
             group = cast(bytes, store_serv.group_name)
-        remote_file_id = group + b"/" + cast(bytes, remote_filename)
+        remote_file_id = group + b"/" + remote_filename
         return "Delete file successed.", remote_file_id, store_serv.ip_addr
 
     def storage_delete_file(self, tracker_client, store_serv, remote_filename):
@@ -599,7 +601,7 @@ class StorageClient:
             th.recv_header(store_conn)
             # if th.status == 2:
             #    raise DataError('[-] Error: remote file %s is not exist.'
-            #                    % (store_serv.group_name + __os_sep__.encode() + remote_filename))
+            #    % (store_serv.group_name + __os_sep__.encode() + remote_filename))
             if th.status != 0:
                 raise DataError("Error: %d, %s" % (th.status, os.strerror(th.status)))
                 # recv_buffer, recv_size = tcp_recv_response(store_conn, th.pkg_len)
@@ -639,7 +641,8 @@ class StorageClient:
             remote_filename = remote_filename.encode()
         try:
             th.send_header(store_conn)
-            # down_fmt: |-offset(8)-download_bytes(8)-group_name(16)-remote_filename(len)-|
+            # down_fmt:
+            # |-offset(8)-download_bytes(8)-group_name(16)-remote_filename(len)-|
             down_fmt = "!Q Q %ds %ds" % (FDFS_GROUP_NAME_MAX_LEN, remote_filename_len)
             send_buffer = struct.pack(
                 down_fmt, offset, download_size, store_serv.group_name, remote_filename
@@ -648,7 +651,7 @@ class StorageClient:
             th.recv_header(store_conn)
             # if th.status == 2:
             #    raise DataError('[-] Error: remote file %s is not exist.' %
-            #                    (store_serv.group_name + __os_sep__.encode() + remote_filename))
+            #    (store_serv.group_name + __os_sep__.encode() + remote_filename))
             if th.status != 0:
                 raise DataError("Error: %d %s" % (th.status, os.strerror(th.status)))
             if download_type == FDFS_DOWNLOAD_TO_FILE:
@@ -772,14 +775,14 @@ class StorageClient:
             th.recv_header(store_conn)
             # if th.status == 2:
             #    raise DataError('[-] Error: Remote file %s has no meta data.'
-            #                    % (store_serv.group_name + __os_sep__.encode() + remote_file_name))
+            #    % (store_serv.group_name + __os_sep__.encode() + remote_file_name))
             if th.status != 0:
                 raise DataError(
                     "[-] Error:%d, %s" % (th.status, os.strerror(th.status))
                 )
             if th.pkg_len == 0:
                 ret_dict = {}
-            meta_buffer, recv_size = tcp_recv_response(store_conn, th.pkg_len)
+            meta_buffer, _recv_size = tcp_recv_response(store_conn, th.pkg_len)
         finally:
             self.pool.release(store_conn)
         ret_dict = fdfs_unpack_metadata(meta_buffer)

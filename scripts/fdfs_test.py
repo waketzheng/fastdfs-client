@@ -9,8 +9,8 @@ from fastdfs_client.exceptions import *
 
 def usage() -> None:
     print(
-        "Usage: python %s {options} [{local_filename} [{remote_file_id}]]\n"
-        % sys.argv[0]
+        f"Usage: "
+        f"python {sys.argv[0]} {{options}} [{{local_filename}} [{{remote_file_id}}]]\n"
     )
     s = (
         "options: upfile, upbuffer, downfile, downbuffer, delete, listgroup, listserv\n"
@@ -41,12 +41,12 @@ if len(sys.argv) < 2:
 client = FastdfsClient("client.conf")
 
 
-def upfile_func():
+def upfile_func() -> None:
     # Upload by filename
     # usage: python fdfs_test.py upfile {local_filename}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     try:
         local_filename = sys.argv[2]
         file_size = os.stat(local_filename).st_size
@@ -56,36 +56,37 @@ def upfile_func():
         ret_dict = client.upload_by_filename(local_filename, meta_dict)
         t2 = time.time()
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
         print("[+] time consume: %fs" % (t2 - t1))
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def upfileex_func():
+def upfileex_func() -> None:
     # Upload by file
     # usage: python fdfs_test.py upfileex {local_filename}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     try:
         local_filename = sys.argv[2]
         t1 = time.time()
         ret_dict = client.upload_by_file(local_filename)
         t2 = time.time()
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
         print("[+] time consume: %fs" % (t2 - t1))
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def upslavefile_func():
+def upslavefile_func() -> None:
     # upload slave file
-    # usage: python fdfs_test.py upslavefile {local_filename} {remote_fileid} {prefix_name}
+    # usage:
+    # python fdfs_test.py upslavefile {local_filename} {remote_fileid} {prefix_name}
     if len(sys.argv) < 5:
         usage()
-        return None
+        return
     try:
         local_filename = sys.argv[2]
         remote_fileid = sys.argv[3]
@@ -94,17 +95,18 @@ def upslavefile_func():
             local_filename, remote_fileid, prefix_name
         )
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def upslavebuffer_func():
+def upslavebuffer_func() -> None:
     # upload slave by buffer
-    # usage: python fdfs_test.py upslavebuffer {local_filename} {remote_fileid} {prefix_name}
+    # usage:
+    # python fdfs_test.py upslavebuffer {local_filename} {remote_fileid} {prefix_name}
     if len(sys.argv) < 5:
         usage()
-        return None
+        return
     try:
         local_filename = sys.argv[2]
         remote_fileid = sys.argv[3]
@@ -115,49 +117,49 @@ def upslavebuffer_func():
                 filebuffer, remote_fileid, prefix_name
             )
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def del_func():
+def del_func() -> None:
     # delete file
     # usage: python fdfs_test.py delete {remote_fileid}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     try:
         remote_file_id = sys.argv[2]
         ret_tuple = client.delete_file(remote_file_id)
-        print("[+] %s" % ret_tuple[0])
+        print(f"[+] {ret_tuple[0]}")
         print("[+] remote_fileid:", ret_tuple[1])
         print("[+] Storage IP:", ret_tuple[2])
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def downfile_func():
+def downfile_func() -> None:
     # Download to file
     # usage: python fdfs_test.py downfile {local_filename} {remote_fileid}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     try:
         local_filename = sys.argv[2]
         remote_fileid = sys.argv[3]
         ret_dict = client.download_to_file(local_filename, remote_fileid)
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def list_group_func():
+def list_group_func() -> None:
     # List one group info
     # usage: python fdfs_test.py listgroup {group_name}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     try:
         group_name = sys.argv[2]
         ret = client.list_one_group(group_name)
@@ -166,12 +168,12 @@ def list_group_func():
         print(e)
 
 
-def listall_func():
+def listall_func() -> None:
     # List all group info
     # usage: python fdfs_test.py listall
     if len(sys.argv) < 2:
         usage()
-        return None
+        return
     try:
         ret_dict = client.list_all_groups()
         print("=" * 80)
@@ -184,22 +186,22 @@ def listall_func():
         print(e)
 
 
-def list_server_func():
+def list_server_func() -> None:
     # List all servers info of group
     # usage: python fdfs_test.py listsrv {group_name} [storage_ip]
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     try:
         group_name = sys.argv[2]
         storage_ip = sys.argv[3] if len(sys.argv) > 3 else None
         ret_dict = client.list_servers(group_name, storage_ip)
         print("=" * 80)
-        print("Group name: %s" % ret_dict["Group name"])
+        print("Group name: {}".format(ret_dict["Group name"]))
         print("=" * 80)
         i = 1
         for serv in ret_dict["Servers"]:
-            print("Storage server %d:" % i)
+            print(f"Storage server {i}:")
             print("=" * 80)
             print(serv)
             i += 1
@@ -208,12 +210,12 @@ def list_server_func():
         print(e)
 
 
-def upbuffer_func():
+def upbuffer_func() -> None:
     # Upload by buffer
     # usage: python fdfs_test.py upbuffer {local_filename} [remote_file_ext_name]
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     local_filename = sys.argv[2]
     ext_name = sys.argv[3] if len(sys.argv) > 3 else None
     # meta_buffer can be null.
@@ -223,18 +225,18 @@ def upbuffer_func():
             file_buffer = f.read()
             ret_dict = client.upload_by_buffer(file_buffer, ext_name, meta_buffer)
             for key in ret_dict:
-                print("[+] %s : %s" % (key, ret_dict[key]))
+                print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def downbuffer_func():
+def downbuffer_func() -> None:
     # Download to buffer
     # usage: python fdfs_test.py downbuffer {remote_file_id}
     # e.g.: 'group1/M00/00/00/wKjzhU_rLNmjo2-1AAAamGDONEA5818.py'
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     remote_fileid = sys.argv[2]
     try:
         ret_dict = client.download_to_buffer(remote_fileid)
@@ -244,12 +246,12 @@ def downbuffer_func():
         print(e)
 
 
-def get_meta_data_func():
+def get_meta_data_func() -> None:
     # Get meta data of remote file
     # usage python fdfs_test.py getmeta {remote_file_id}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     remote_fileid = sys.argv[2]
     try:
         ret_dict = client.get_meta_data(remote_fileid)
@@ -258,12 +260,12 @@ def get_meta_data_func():
         print(e)
 
 
-def set_meta_data_func():
+def set_meta_data_func() -> None:
     # Set meta data of remote file
     # usage python fdfs_test.py setmeta {remote_file_id}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     remote_fileid = sys.argv[2]
     meta_dict = {
         "ext_name": "jgp",
@@ -273,65 +275,65 @@ def set_meta_data_func():
     try:
         ret_dict = client.set_meta_data(remote_fileid, meta_dict)
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def upappendfile_func():
+def upappendfile_func() -> None:
     # Upload an appender file by filename
     # usage: python fdfs_test.py upappendfile {local_filename}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     local_filename = sys.argv[2]
     try:
         ret_dict = client.upload_appender_by_file(local_filename)
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def upappendbuffer_func():
+def upappendbuffer_func() -> None:
     # Upload an appender file by buffer
     # usage: python fdfs_test.py upappendbuffer {local_filename}
     if len(sys.argv) < 3:
         usage()
-        return None
+        return
     local_filename = sys.argv[2]
     try:
         with open(local_filename, "rb") as f:
             file_buffer = f.read()
             ret_dict = client.upload_appender_by_buffer(file_buffer)
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def appendfile_func():
+def appendfile_func() -> None:
     # Append a remote file
     # usage: python fdfs_test.py appendfile {local_filename} {remote_file_id}
     if len(sys.argv) < 4:
         usage()
-        return None
+        return
     local_filename = sys.argv[2]
     remote_fileid = sys.argv[3]
     try:
         ret_dict = client.append_by_file(local_filename, remote_fileid)
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def appendbuffer_func():
+def appendbuffer_func() -> None:
     # Append a remote file by buffer
     # usage: python fdfs_test.py appendbuffer {local_filename} {remote_file_id}
     if len(sys.argv) < 4:
         usage()
-        return None
+        return
     local_filename = sys.argv[2]
     remote_fileid = sys.argv[3]
     try:
@@ -339,33 +341,34 @@ def appendbuffer_func():
             filebuffer = f.read()
             ret_dict = client.append_by_buffer(filebuffer, remote_fileid)
             for key in ret_dict:
-                print("[+] %s : %s" % (key, ret_dict[key]))
+                print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def truncate_func():
+def truncate_func() -> None:
     # Truncate file
     # usage: python fdfs_test.py truncate {truncate_filesize} {remote_file_id}
     if len(sys.argv) < 4:
         usage()
-        return None
+        return
     truncate_filesize = int(sys.argv[2])
     remote_fileid = sys.argv[3]
     try:
         ret_dict = client.truncate_file(truncate_filesize, remote_fileid)
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def modifyfile_func():
+def modifyfile_func() -> None:
     # Modify file by filename
-    # usage: python fdfs_test.py modifyfile {local_filename}  {remote_fileid} [file_offset]
+    # usage:
+    # python fdfs_test.py modifyfile {local_filename}  {remote_fileid} [file_offset]
     if len(sys.argv) < 4:
         usage()
-        return None
+        return
     local_filename = sys.argv[2]
     remote_fileid = sys.argv[3]
     file_offset = 0
@@ -374,17 +377,18 @@ def modifyfile_func():
     try:
         ret_dict = client.modify_by_filename(local_filename, remote_fileid, file_offset)
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 
 
-def modifybuffer_func():
+def modifybuffer_func() -> None:
     # Modify file by buffer
-    # usage: python fdfs_test.py modifybuffer {local_filename} {remote_fileid} [file_offset]
+    # usage:
+    # python fdfs_test.py modifybuffer {local_filename} {remote_fileid} [file_offset]
     if len(sys.argv) < 4:
         usage()
-        return None
+        return
     local_filename = sys.argv[2]
     remote_fileid = sys.argv[3]
     file_offset = 0
@@ -395,7 +399,7 @@ def modifybuffer_func():
             filebuffer = f.read()
         ret_dict = client.modify_by_buffer(filebuffer, remote_fileid, file_offset)
         for key in ret_dict:
-            print("[+] %s : %s" % (key, ret_dict[key]))
+            print(f"[+] {key} : {ret_dict[key]}")
     except (ConnectionError, ResponseError, DataError) as e:
         print(e)
 

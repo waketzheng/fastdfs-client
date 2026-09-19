@@ -21,7 +21,7 @@ work_dir = os.path.dirname(parent)
 if os.getcwd() != work_dir:
     os.chdir(work_dir)
 
-cmd = "{} run {}".format(TOOL, CMD) if TOOL else CMD
+cmd = f"{TOOL} run {CMD}" if TOOL else CMD
 if os.system(cmd) != 0:
     print("\033[1m Please run './scripts/format.py' to auto-fix style issues \033[0m")
     sys.exit(1)

@@ -1,5 +1,4 @@
 import os
-import socket
 import struct
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -233,8 +232,8 @@ class TrackerHeader:
         header = self.build_header()
         try:
             conn._sock.sendall(header)
-        except (socket.error, socket.timeout) as e:
-            msg = "[-] Error: while writting to socket: %s" % (e.args,)
+        except (TimeoutError, OSError) as e:
+            msg = f"[-] Error: while writting to socket: {e.args}"
             raise ConnectionError(msg) from e
 
     def recv_header(self, conn) -> None:
@@ -243,8 +242,8 @@ class TrackerHeader:
         """
         try:
             header = conn._sock.recv(self.header_len())
-        except (socket.error, socket.timeout) as e:
-            msg = "[-] Error: while reading from socket: %s" % (e.args,)
+        except (TimeoutError, OSError) as e:
+            msg = f"[-] Error: while reading from socket: {e.args}"
             raise ConnectionError(msg) from e
         self._unpack(header)
 

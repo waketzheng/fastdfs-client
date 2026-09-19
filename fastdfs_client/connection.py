@@ -4,9 +4,9 @@ import operator
 import os
 import random
 import socket
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from itertools import chain
-from typing import Callable, Generator
 
 from .exceptions import ConnectionError, ResponseError
 from .utils import logger
@@ -23,19 +23,19 @@ class Connection:
         self.remote_addr = None
         self._sock = None
 
-    def __del__(self):
+    def __del__(self) -> None:
         try:
             self.disconnect()
         except Exception as e:
             logger.debug(f"disconnect error: {e}")
 
-    def connect(self):
+    def connect(self) -> None:
         """Connect to fdfs server."""
         if self._sock:
             return
         try:
             self._sock = self._connect()
-        except socket.error as e:
+        except OSError as e:
             raise ConnectionError(self._errormessage(e)) from e
         # print '[+] Create a connection success.'
         # print '\tLocal address is %s:%s.' % self._sock.getsockname()
@@ -58,7 +58,7 @@ class Connection:
             return
         try:
             self._sock.close()
-        except socket.error as e:
+        except OSError as e:
             raise ConnectionError(self._errormessage(e)) from e
         self._sock = None
 
@@ -68,19 +68,12 @@ class Connection:
     def _errormessage(self, exception) -> str:
         # args for socket.error can either be (errno, "message")
         # or just "message" '''
-        if len(exception.args) == 1:
-            return "[-] Error: connect to %s:%s. %s." % (
-                self.remote_addr,
-                self.remote_port,
-                exception.args[0],
-            )
-        else:
-            return "[-] Error: %s connect to %s:%s. %s." % (
-                exception.args[0],
-                self.remote_addr,
-                self.remote_port,
-                exception.args[1],
-            )
+        e = "[-] Error: "
+        a = f"{exception.args[0]} "
+        if len(exception.args) != 1:
+            e += a
+            a = f"{exception.args[1]} "
+        return f"{e}connect to {self.remote_addr}:{self.remote_port}. {a}."
 
 
 class ConnectionPool:
@@ -186,8 +179,8 @@ def tcp_recv_response(conn, bytes_size, buffer_size=4096) -> tuple[bytes, int]:
             recv_buff.append(resp)
             total_size += len(resp)
             bytes_size -= len(resp)
-    except (socket.error, socket.timeout) as e:
-        msg = "[-] Error: while reading from socket: (%s)" % e.args
+    except (TimeoutError, OSError) as e:
+        msg = f"[-] Error: while reading from socket: ({e.args})"
         raise ConnectionError(msg) from e
     return (b"".join(recv_buff), total_size)
 
@@ -214,8 +207,10 @@ async def tcp_receive(
             total_size += length
             bytes_size -= length
     if expected_len is not None and not compare(total_size, expected_len):
-        msg = f"[-] Error: {clsname} response length is not match, expect: {expected_len}, actual: {total_size}"
-        raise ResponseError(msg)
+        raise ResponseError(
+            f"[-] Error: {clsname} response length is not match, "
+            f"expect: {expected_len}, actual: {total_size}"
+        )
     return b"".join(recv_bs)
 
 
@@ -229,6 +224,6 @@ def tcp_send_data(conn, bytes_stream) -> None:
     """
     try:
         conn._sock.sendall(bytes_stream)
-    except (socket.error, socket.timeout) as e:
-        msg = "[-] Error: while writting to socket: (%s)" % e.args
+    except (TimeoutError, OSError) as e:
+        msg = f"[-] Error: while writting to socket: ({e.args})"
         raise ConnectionError(msg) from e

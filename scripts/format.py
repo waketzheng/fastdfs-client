@@ -11,7 +11,7 @@ import os
 import sys
 
 CMD = "fast lint --skip-mypy"
-TOOL = ("poetry", "pdm", "uv", "")[0]
+TOOL = ("poetry", "pdm", "uv", "")[1]
 
 parent = os.path.abspath(os.path.dirname(__file__))
 work_dir = os.path.dirname(parent)

@@ -22,8 +22,8 @@ pip install fastdfs-client
 ```py
 from fastdfs_client import FastdfsClient
 
-client = FastdfsClient('/etc/fdfs/client.conf')
-ret = client.upload_by_filename('test.txt')
+client = FastdfsClient("/etc/fdfs/client.conf")
+ret = client.upload_by_filename("test.txt")
 print(ret)
 ```
 - 响应示例：
@@ -41,7 +41,8 @@ print(ret)
 - 上传并返回URL地址
 ```py
 from pathlib import Path
-url = client.upload_as_url(Path('test.txt').read_bytes())
+
+url = client.upload_as_url(Path("test.txt").read_bytes())
 print(url)
 # https://dfs.waketzheng.top/group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.jpg
 ```
@@ -53,7 +54,7 @@ print(ret)
 ```
 ## 异步的方式
 ```py
-url = await client.upload(Path('test.txt').read_bytes())
+url = await client.upload(Path("test.txt").read_bytes())
 print(url)
 # https://dfs.waketzheng.top/group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.jpg
 ret = await client.delete(url)

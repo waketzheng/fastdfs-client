@@ -1,6 +1,6 @@
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
@@ -8,7 +8,7 @@ from fastdfs_client.client import Config, FastdfsClient, get_tracker_conf, is_IP
 from fastdfs_client.exceptions import ConfigError, DataError
 
 
-def test_ip():
+def test_ip() -> None:
     assert is_IPv4("8.8.8.8")
     assert not is_IPv4("8.8.8.1234")
     assert not is_IPv4("8.8.8.a")
@@ -16,7 +16,7 @@ def test_ip():
     assert not is_IPv4("8.8.8")
 
 
-def test_config_create():
+def test_config_create() -> None:
     ip = "192.168.0.2"
     assert Config.create((ip,)) == {
         "host_tuple": (ip,),
@@ -26,7 +26,7 @@ def test_config_create():
     }
 
 
-def test_conf_file():
+def test_conf_file() -> None:
     parent = Path(__file__).parent
     assert (
         get_tracker_conf("tests/trackers.conf")
@@ -44,7 +44,7 @@ def test_conf_file():
         FastdfsClient(invalid_conf_file)
 
 
-def test_conf_string_and_dict():
+def test_conf_string_and_dict() -> None:
     conf = {
         "host_tuple": ("192.168.0.2",),
         "name": "Tracker Pool",
@@ -61,7 +61,7 @@ def test_conf_string_and_dict():
         FastdfsClient({})
 
 
-def test_build_host():
+def test_build_host() -> None:
     domain = "dfs.waketzheng.top"
     ip = "120.77.47.33"
     client = FastdfsClient([domain])
@@ -78,7 +78,7 @@ def test_build_host():
     assert client6._build_host(ip) == f"https://{domain}/"
 
 
-def test_upload_url():
+def test_upload_url() -> None:
     to_upload = Path(__file__)
     domain = "dfs.waketzheng.top"
     client = FastdfsClient([domain])
@@ -92,7 +92,7 @@ def test_upload_url():
         client._check_file(str(to_upload.parent))
 
 
-def test_upload_filename():
+def test_upload_filename() -> None:
     domain = "dfs.waketzheng.top"
     client = FastdfsClient([domain])
     ret = client.upload_by_filename(__file__)
@@ -105,7 +105,7 @@ def test_upload_filename():
         client.upload_by_filename(str(Path(__file__).parent))
 
 
-def test_upload_file():
+def test_upload_file() -> None:
     domain = "dfs.waketzheng.top"
     client = FastdfsClient([domain])
     with pytest.raises(NotImplementedError):
@@ -114,7 +114,7 @@ def test_upload_file():
 
 @contextmanager
 def temp_remote_file(
-    client: FastdfsClient, to_upload: Path, as_url=False
+    client: FastdfsClient, to_upload: Path, as_url: bool = False
 ) -> Generator[str, None, None]:
     if as_url:
         url = client.upload_as_url(to_upload.read_bytes(), to_upload.suffix)
@@ -127,7 +127,7 @@ def temp_remote_file(
         client.delete_file(url)
 
 
-def test_download(tmp_path: Path):
+def test_download(tmp_path: Path) -> None:
     domain = "dfs.waketzheng.top"
     client = FastdfsClient([domain])
     with pytest.raises(DataError):
@@ -142,7 +142,7 @@ def test_download(tmp_path: Path):
         client.download_to_file(temp_file, remote_file_id)
 
 
-def test_download_by_url(tmp_path: Path):
+def test_download_by_url(tmp_path: Path) -> None:
     domain = "dfs.waketzheng.top"
     client = FastdfsClient([domain])
     to_upload = Path(__file__)

@@ -1,6 +1,11 @@
 # ChangeLog
 
 
+## 1.3
+
+### [1.3.0](../../releases/tag/v1.3.0) - 2026-09-19
+- Drop support for Python3.9
+- Migrate from poetry to uv
 
 ## 1.2
 

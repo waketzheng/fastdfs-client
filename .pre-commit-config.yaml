@@ -1,13 +1,12 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
-default_language_version:
-    python: python3.11
 repos:
-  - repo: git@github.com:pre-commit/pre-commit-hooks
-    # https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0  # Use the ref you want to point at
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    # To upgrade hooks run: `prek autoupdate`
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
+        exclude: ^uv.lock$
       - id: check-toml
       - id: check-yaml
         args: [ --unsafe ]
@@ -17,7 +16,18 @@ repos:
   - repo: local
     hooks:
       - id: format
-        name: check and reformat by ruff/mypy
-        entry: poetry run fast lint
+        name: check and reformat by ruff
+        # The pdm/fast/ruff/ty command can be install by:
+        #   uv tool install --python 3.14 pdm
+        #   uv tool install --python 3.14 fast-dev-cli
+        #   uv tool install --python 3.14 ruff
+        #   uv tool install --python 3.14 ty
+        entry: pdm run fast lint --skip-mypy
         language: system
         types: [python]
+
+      - id: ty-check
+        name: check type hints by ty
+        entry: pdm run ty check
+        language: system
+        pass_filenames: false

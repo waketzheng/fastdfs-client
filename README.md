@@ -52,8 +52,9 @@ pip install fastdfs-client
 
 ```py
 from fastdfs_client import FastdfsClient
-client = FastdfsClient('/etc/fdfs/client.conf')
-ret = client.upload_by_filename('test.txt')
+
+client = FastdfsClient("/etc/fdfs/client.conf")
+ret = client.upload_by_filename("test.txt")
 print(ret)
 ```
 - Response sample
@@ -75,7 +76,7 @@ print(ret)
 ```py
 from pathlib import Path
 
-p = Path('test.txt')
+p = Path("test.txt")
 client = FastdfsClient(["dfs.waketzheng.top"])
 url = client.upload_as_url(p.read_bytes(), p.suffix)
 print(url)
@@ -83,12 +84,14 @@ print(url)
 ```
 - Download
 ```py
-save_to = 'local.txt'
-client.download_to_file(save_to, 'group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.txt')
+save_to = "local.txt"
+client.download_to_file(save_to, "group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.txt")
 ```
 - Delete
 ```py
-id_or_url = 'https://dfs.waketzheng.top/group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.txt'
+id_or_url = (
+    "https://dfs.waketzheng.top/group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.txt"
+)
 # id_or_url = 'group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.txt'
 client.delete_file(id_or_url)
 ```
@@ -100,14 +103,14 @@ from pathlib import Path
 from fastdfs_client import FastdfsClient
 
 client = FastdfsClient(["dfs.waketzheng.top"])
-p = Path('tests/test_async_client.py')
+p = Path("tests/test_async_client.py")
 url = await client.upload(p.read_bytes(), p.suffix)
 print(url)
 # https://dfs.waketzheng.top/group1/M00/00/00/xxx.py
 ```
 - delete
 ```py
-url = 'https://dfs.waketzheng.top/group1/M00/00/00/xxx.py'
+url = "https://dfs.waketzheng.top/group1/M00/00/00/xxx.py"
 resp = await client.delete(url)
 print(resp)
 # ('Delete file successed.', b'group1/M00/00/1B/eE0vIWaU9kyAVILJAAHM-px7j44359.py', b'120.77.47.33')

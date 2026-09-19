@@ -123,7 +123,7 @@ class StorageInfo:
     # fmt = |-status(1)-ipaddr(16)-domain(128)-srcipaddr(16)-ver(6)-52*8-|
     fmt = "!B 16s 16s 128s 16s 6s 10Q 4s4s4s 42Q?"
 
-    def set_info(self, bytes_stream):
+    def set_info(self, bytes_stream) -> bool:
         (
             self.status,
             self.id,
@@ -207,24 +207,24 @@ class StorageInfo:
         ).isoformat()
         return True
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Transform to readable string."""
 
         s = "Storage information:\n"
-        s += "\tip_addr = %s (%s)\n" % (self.ip_addr, parse_storage_status(self.status))
-        s += "\thttp domain = %s\n" % self.domain_name
-        s += "\tversion = %s\n" % self.version
-        s += "\tjoin time = %s\n" % self.join_time
-        s += "\tup time = %s\n" % self.up_time
-        s += "\ttotal storage = %s\n" % self.totalMB
-        s += "\tfree storage = %s\n" % self.freeMB
+        s += f"\tip_addr = {self.ip_addr} ({parse_storage_status(self.status)})\n"
+        s += f"\thttp domain = {self.domain_name}\n"
+        s += f"\tversion = {self.version}\n"
+        s += f"\tjoin time = {self.join_time}\n"
+        s += f"\tup time = {self.up_time}\n"
+        s += f"\ttotal storage = {self.totalMB}\n"
+        s += f"\tfree storage = {self.freeMB}\n"
         s += "\tupload priority = %d\n" % self.upload_prio
         s += "\tstore path count = %d\n" % self.store_path_count
         s += "\tsubdir count per path = %d\n" % self.subdir_count_per_path
         s += "\tstorage port = %d\n" % self.storage_port
         s += "\tstorage HTTP port = %d\n" % self.storage_http_port
         s += "\tcurrent write path = %d\n" % self.curr_write_path
-        s += "\tsource ip_addr = %s\n" % self.ip_addr
+        s += f"\tsource ip_addr = {self.ip_addr}\n"
         s += f"\tif_trunk_server = {self.if_trunk_server}\n"
         s += "\ttotal upload count = %ld\n" % self.total_upload_count
         s += "\tsuccess upload count = %ld\n" % self.success_upload_count
@@ -264,10 +264,10 @@ class StorageInfo:
         s += "\tsuccess file read count = %ld\n" % self.success_file_read_count
         s += "\ttotal file write count = %ld\n" % self.total_file_write_count
         s += "\tsucess file write count = %ld\n" % self.success_file_write_count
-        s += "\tlast heartbeat time = %s\n" % self.last_heartbeat_time
-        s += "\tlast source update = %s\n" % self.last_source_sync
-        s += "\tlast sync update = %s\n" % self.last_sync_update
-        s += "\tlast synced time = %s\n" % self.last_synced_time
+        s += f"\tlast heartbeat time = {self.last_heartbeat_time}\n"
+        s += f"\tlast source update = {self.last_source_sync}\n"
+        s += f"\tlast sync update = {self.last_sync_update}\n"
+        s += f"\tlast synced time = {self.last_synced_time}\n"
         return s
 
     def get_fmt_size(self):
@@ -290,12 +290,12 @@ class GroupInfo:
     curr_trunk_file_id = 0
     fmt = "!%ds 11Q" % (FDFS_GROUP_NAME_MAX_LEN + 1)
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = "Group information:\n"
-        s += "\tgroup name = %s\n" % self.group_name
-        s += "\ttotal disk space = %s\n" % self.totalMB
-        s += "\tdisk free space = %s\n" % self.freeMB
-        s += "\ttrunk free space = %s\n" % self.trunk_freeMB
+        s += f"\tgroup name = {self.group_name}\n"
+        s += f"\ttotal disk space = {self.totalMB}\n"
+        s += f"\tdisk free space = {self.freeMB}\n"
+        s += f"\ttrunk free space = {self.trunk_freeMB}\n"
         s += "\tstorage server count = %d\n" % self.count
         s += "\tstorage port = %d\n" % self.storage_port
         s += "\tstorage HTTP port = %d\n" % self.store_http_port
@@ -306,7 +306,7 @@ class GroupInfo:
         s += "\tcurrent trunk file id = %d\n" % self.curr_trunk_file_id
         return s
 
-    def set_info(self, bytes_stream):
+    def set_info(self, bytes_stream) -> None:
         (
             group_name,
             totalMB,
@@ -337,7 +337,7 @@ class GroupInfo:
 class TrackerClient:
     """Class Tracker client."""
 
-    def __init__(self, pool):
+    def __init__(self, pool) -> None:
         self.pool = pool
 
     def tracker_list_servers(self, group_name, storage_ip=None):
@@ -375,8 +375,8 @@ class TrackerClient:
                     % (th.pkg_len, recv_size)
                 )
                 raise ResponseError(errinfo)
-        except ConnectionError:
-            raise
+        except ConnectionError as e:
+            raise ResponseError(e) from e
         finally:
             self.pool.release(conn)
         num_storage = recv_size / si_fmt_size
@@ -409,11 +409,11 @@ class TrackerClient:
                 raise DataError(
                     "[-] Error: %d, %s" % (th.status, os.strerror(th.status))
                 )
-            recv_buffer, recv_size = tcp_recv_response(conn, th.pkg_len)
+            recv_buffer, _recv_size = tcp_recv_response(conn, th.pkg_len)
             group_info = GroupInfo()
             group_info.set_info(recv_buffer)
-        except ConnectionError:
-            raise
+        except ConnectionError as e:
+            raise ResponseError(e) from e
         finally:
             self.pool.release(conn)
         return group_info
@@ -426,22 +426,17 @@ class TrackerClient:
             th.send_header(conn)
             th.recv_header(conn)
             if th.status != 0:
-                raise DataError(
-                    "[-] Error: %d, %s" % (th.status, os.strerror(th.status))
-                )
+                raise DataError(f"[-] Error: {th.status}, {os.strerror(th.status)}")
             recv_buffer, recv_size = tcp_recv_response(conn, th.pkg_len)
-        except:
-            raise
         finally:
             self.pool.release(conn)
         gi = GroupInfo()
         gi_fmt_size = gi.get_fmt_size()
         if recv_size % gi_fmt_size != 0:
-            errmsg = "[-] Error: Response size is mismatch, except: %d, actul: %d" % (
-                th.pkg_len,
-                recv_size,
+            raise ResponseError(
+                f"[-] Error: Response size is mismatch, "
+                f"except: {th.pkg_len}, actul: {recv_size}"
             )
-            raise ResponseError(errmsg)
         num_groups = recv_size / gi_fmt_size
         ret_dict = {}
         ret_dict["Groups count"] = num_groups
@@ -464,19 +459,18 @@ class TrackerClient:
             th.send_header(conn)
             th.recv_header(conn)
             if th.status != 0:
-                raise DataError(
-                    "[-] Error: %d, %s" % (th.status, os.strerror(th.status))
-                )
+                raise DataError(f"[-] Error: {th.status}, {os.strerror(th.status)}")
             recv_buffer, recv_size = tcp_recv_response(conn, th.pkg_len)
             if recv_size != TRACKER_QUERY_STORAGE_STORE_BODY_LEN:
-                errmsg = "[-] Error: Tracker response length is invaild, "
-                errmsg += "expect: %d, actual: %d" % (
-                    TRACKER_QUERY_STORAGE_STORE_BODY_LEN,
-                    recv_size,
+                errmsg = (
+                    "[-] Error: Tracker response length is invaild, "
+                    f"expect: {TRACKER_QUERY_STORAGE_STORE_BODY_LEN}, "
+                    f"actual: {recv_size}"
                 )
                 raise ResponseError(errmsg)
         # recv_fmt |-group_name(16)-ipaddr(16-1)-port(8)-store_path_index(1)|
-        recv_fmt = "!%ds %ds Q B" % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
+        template = "!%ds %ds Q B"
+        recv_fmt = template % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
         store_serv = StorageServer()
         (group_name, ip_addr, store_serv.port, store_serv.store_path_index) = (
             struct.unpack(recv_fmt, recv_buffer)
@@ -496,27 +490,28 @@ class TrackerClient:
         th.cmd = TRACKER_PROTO_CMD_SERVICE_QUERY_STORE_WITH_GROUP_ONE
         th.pkg_len = FDFS_GROUP_NAME_MAX_LEN
         th.send_header(conn)
-        group_fmt = "!%ds" % FDFS_GROUP_NAME_MAX_LEN
+        template = "!%ds"
+        group_fmt = template % FDFS_GROUP_NAME_MAX_LEN
         send_buffer = struct.pack(group_fmt, group_name)
         try:
             tcp_send_data(conn, send_buffer)
             th.recv_header(conn)
             if th.status != 0:
-                raise DataError("Error: %d, %s" % (th.status, os.strerror(th.status)))
+                raise DataError(f"Error: {th.status}, {os.strerror(th.status)}")
             recv_buffer, recv_size = tcp_recv_response(conn, th.pkg_len)
-            if recv_size != TRACKER_QUERY_STORAGE_STORE_BODY_LEN:
-                errmsg = "[-] Error: Tracker response length is invaild, "
-                errmsg += "expect: %d, actual: %d" % (
-                    TRACKER_QUERY_STORAGE_STORE_BODY_LEN,
-                    recv_size,
-                )
-                raise ResponseError(errmsg)
-        except ConnectionError:
-            raise
+        except ConnectionError as e:
+            raise ResponseError(str(e)) from e
         finally:
             self.pool.release(conn)
+        if recv_size != TRACKER_QUERY_STORAGE_STORE_BODY_LEN:
+            errmsg = (
+                "[-] Error: Tracker response length is invaild, "
+                f"expect: {TRACKER_QUERY_STORAGE_STORE_BODY_LEN}, actual: {recv_size}"
+            )
+            raise ResponseError(errmsg)
         # recv_fmt: |-group_name(16)-ipaddr(16-1)-port(8)-store_path_index(1)-|
-        recv_fmt = "!%ds %ds Q B" % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
+        template = "!%ds %ds Q B"
+        recv_fmt = template % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
         store_serv = StorageServer()
         (group, ip_addr, store_serv.port, store_serv.store_path_index) = struct.unpack(
             recv_fmt, recv_buffer
@@ -541,24 +536,28 @@ class TrackerClient:
         th.cmd = cmd
         th.send_header(conn)
         # query_fmt: |-group_name(16)-filename(file_name_len)-|
-        query_fmt = "!%ds %ds" % (FDFS_GROUP_NAME_MAX_LEN, file_name_len)
+        template = "!%ds %ds"
+        query_fmt = template % (FDFS_GROUP_NAME_MAX_LEN, file_name_len)
         send_buffer = struct.pack(query_fmt, group_name.encode(), filename.encode())
         try:
             tcp_send_data(conn, send_buffer)
             th.recv_header(conn)
             if th.status != 0:
-                raise DataError("Error: %d, %s" % (th.status, os.strerror(th.status)))
+                raise DataError(f"Error: {th.status}, {os.strerror(th.status)}")
             recv_buffer, recv_size = tcp_recv_response(conn, th.pkg_len)
             if recv_size != TRACKER_QUERY_STORAGE_FETCH_BODY_LEN:
-                errmsg = "[-] Error: Tracker response length is invaild, "
-                errmsg += "expect: %d, actual: %d" % (th.pkg_len, recv_size)
+                errmsg = (
+                    "[-] Error: Tracker response length is invaild, "
+                    f"expect: {th.pkg_len}, actual: {recv_size}"
+                )
                 raise ResponseError(errmsg)
-        except ConnectionError:
-            raise
+        except ConnectionError as e:
+            raise ResponseError(str(e)) from e
         finally:
             self.pool.release(conn)
         # recv_fmt: |-group_name(16)-ip_addr(16)-port(8)-|
-        recv_fmt = "!%ds %ds Q" % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
+        template = "!%ds %ds Q"
+        recv_fmt = template % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
         store_serv = StorageServer()
         (group_name, ipaddr, store_serv.port) = struct.unpack(recv_fmt, recv_buffer)
         store_serv.group_name = group_name.strip(b"\x00")
@@ -606,7 +605,8 @@ class TrackerClient:
             if is_delete:
                 expected_len = TRACKER_QUERY_STORAGE_FETCH_BODY_LEN
                 # query_fmt: |-group_name(16)-filename(file_name_len)-|
-                query_fmt = "!%ds %ds" % (FDFS_GROUP_NAME_MAX_LEN, file_name_len)
+                template = "!%ds %ds"
+                query_fmt = template % (FDFS_GROUP_NAME_MAX_LEN, file_name_len)
                 send_buffer = struct.pack(
                     query_fmt, group_name.encode(), filename.encode()
                 )
@@ -615,12 +615,14 @@ class TrackerClient:
             recv_buffer = await tcp_receive(client, th.pkg_len, expected_len)
         if is_delete:
             # recv_fmt: |-group_name(16)-ip_addr(16)-port(8)-|
-            recv_fmt = "!%ds %ds Q" % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
+            template = "!%ds %ds Q"
+            recv_fmt = template % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
             group, ip, port = struct.unpack(recv_fmt, recv_buffer)
             path_index = 0
         else:
             # recv_fmt |-group_name(16)-ipaddr(16-1)-port(8)-store_path_index(1)|
-            recv_fmt = "!%ds %ds Q B" % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
+            template = "!%ds %ds Q B"
+            recv_fmt = template % (FDFS_GROUP_NAME_MAX_LEN, IP_ADDRESS_SIZE - 1)
             group, ip, port, path_index = struct.unpack(recv_fmt, recv_buffer)
         return StorageServer(
             group_name=group.strip(b"\x00"),

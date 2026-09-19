@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import httpx
+import httpx2 as httpx
 import pytest
 
 from fastdfs_client.client import AsyncDfsClient, FastdfsClient
@@ -11,7 +11,7 @@ class TestUpload:
     domain = "dfs.waketzheng.top"
 
     @pytest.mark.anyio
-    async def test_upload_and_delete(self):
+    async def test_upload_and_delete(self) -> None:
         to_upload = Path(__file__)
         client = self.client_cls([self.domain])
         content = to_upload.read_bytes()
@@ -29,13 +29,13 @@ class TestUpload:
         assert uploaded == content
 
     @staticmethod
-    async def http_get(url) -> bytes:
+    async def http_get(url: str) -> bytes:
         async with httpx.AsyncClient() as client:
             r = await client.get(url)
             return r.content
 
     @pytest.mark.anyio
-    async def test_client_with_ip_mapping(self):
+    async def test_client_with_ip_mapping(self) -> None:
         remote_ip = FastdfsClient.get_domain_ip(self.domain)
         client = self.client_cls([remote_ip], ip_mapping={remote_ip: self.domain})
         content = Path(__file__).read_bytes() * 2
