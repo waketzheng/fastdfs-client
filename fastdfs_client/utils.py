@@ -107,6 +107,7 @@ class FastdfsConfigParser(RawConfigParser):
         # Write the items from the default section manually and then remove them
         # from the data. They'll be re-added later.
         section = str(self._default_section)
+        default_section_items = None
         try:
             default_section_items = self.items(section)
             self.remove_section(section)
@@ -121,8 +122,9 @@ class FastdfsConfigParser(RawConfigParser):
         configparser.RawConfigParser.write(self, fp)
 
         self.add_section(section)
-        for key, value in default_section_items:
-            self.set(section, key, value)
+        if default_section_items is not None:
+            for key, value in default_section_items:
+                self.set(section, key, value)
 
     def _read(self, fp, fpname) -> None:
         """Parse a sectioned setup file.

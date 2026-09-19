@@ -3,8 +3,10 @@ import struct
 from dataclasses import dataclass
 from datetime import datetime
 
+import anyio
+
 from .connection import tcp_receive, tcp_recv_response, tcp_send_data
-from .exceptions import ConnectionError, DataError, FDFSError, ResponseError
+from .exceptions import ConnectionError, DataError, ResponseError
 from .protols import (
     FDFS_GROUP_NAME_MAX_LEN,
     FDFS_SPACE_SIZE_BASE_INDEX,
@@ -31,11 +33,6 @@ from .protols import (
     TrackerHeader,
 )
 from .utils import appromix
-
-try:
-    import anyio
-except ImportError:
-    anyio = None  # type:ignore[assignment]
 
 
 def parse_storage_status(status_code):
@@ -593,12 +590,7 @@ class TrackerClient:
         else:
             cmd = TRACKER_PROTO_CMD_SERVICE_QUERY_STORE_WITHOUT_GROUP_ONE
         th = TrackerHeader(cmd=cmd, pkg_len=pkg_len)
-        try:
-            connection = anyio.connect_tcp(*host_info)
-        except AttributeError:
-            raise FDFSError(
-                "'anyio' is required! You may need to run: `pip install anyio`"
-            ) from None
+        connection = anyio.connect_tcp(*host_info)
         async with await connection as client:
             await client.send(th.build_header())
             expected_len = TRACKER_QUERY_STORAGE_STORE_BODY_LEN

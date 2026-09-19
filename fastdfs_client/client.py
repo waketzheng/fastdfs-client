@@ -64,9 +64,12 @@ def get_tracker_conf(conf_path="client.conf") -> dict:
             tracker_ip_list = [tracker_ip]
         else:
             tracker_ip_list = []
+            tracker_port = None
             for tr in tracker_list:
                 tracker_ip, tracker_port = tr.split(":")
                 tracker_ip_list.append(tracker_ip)
+            if tracker_port is None:
+                raise ValueError("'tracker_server' can not be empty list")
         tracker["host_tuple"] = tuple(tracker_ip_list)
         tracker["port"] = int(tracker_port)
         tracker["timeout"] = timeout
@@ -139,6 +142,7 @@ class AsyncDfsClient(BaseClient):
 
     def random_host(self) -> tuple[str, int]:
         ip_list: list[str] = []
+        host = None
         for host in self.trackers["host_tuple"]:
             if not is_IPv4(host):
                 if host in self.domain_ip:
@@ -148,6 +152,10 @@ class AsyncDfsClient(BaseClient):
             ip_list.append(host)
         if len(ip_list) > 1:
             host = random.choice(ip_list)
+        if host is None:
+            raise ValueError(
+                f'Expected as list of string, Got: {self.trackers["host_tuple"] = }'
+            )
         return host, self.trackers["port"]
 
     async def upload(self, content: bytes, suffix=".jpg") -> str:
@@ -578,8 +586,7 @@ class FastdfsClient(BaseClient):
         if offset:
             with contextlib.suppress(TypeError, ValueError):
                 file_offset = int(offset)
-        if not down_bytes:
-            download_bytes = int(down_bytes)
+        download_bytes = int(down_bytes) if down_bytes else 0
         tc = TrackerClient(self.tracker_pool)
         store_serv = tc.tracker_query_storage_fetch(group_name, remote_filename)
         store = StorageClient(store_serv.ip_addr, store_serv.port, self.timeout)
@@ -609,8 +616,7 @@ class FastdfsClient(BaseClient):
         if offset:
             with contextlib.suppress(TypeError, ValueError):
                 file_offset = int(offset)
-        if not down_bytes:
-            download_bytes = int(down_bytes)
+        download_bytes = int(down_bytes) if down_bytes else 0
         tc = TrackerClient(self.tracker_pool)
         store_serv = tc.tracker_query_storage_fetch(group_name, remote_filename)
         store = StorageClient(store_serv.ip_addr, store_serv.port, self.timeout)

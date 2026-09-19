@@ -4,7 +4,9 @@ description = "Python Implement for FastDFS Client"
 authors = [{name="Waket Zheng", email="waketzheng@gmail.com"}]
 dynamic = ["version"]
 readme = "README.md"
-dependencies = []
+dependencies = [
+    "anyio (>=4.0.0,<5.0.0)",
+]
 requires-python = ">=3.10"
 keywords = ["asyncio", "anyio", "FastDFS"]
 classifiers = [
@@ -20,9 +22,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
-
-[project.optional-dependencies]
-aio = ["anyio (>=4.0.0,<5.0.0)"]
 
 [project.urls]
 homepage = "https://github.com/waketzheng/fastdfs-client-python"
@@ -97,3 +96,6 @@ exclude = ["scripts/*.py"]
 [tool.ty.rules]
 unused-ignore-comment = "ignore"
 unresolved-attribute = "ignore"
+
+[tool.pyright]
+exclude = ["scripts/"]

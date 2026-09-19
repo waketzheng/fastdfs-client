@@ -31,3 +31,30 @@ repos:
         entry: pdm run ty check
         language: system
         pass_filenames: false
+
+      - id: mypy
+        name: Check type hints by mypy
+        entry: just mypy
+        language: system
+        args: [.]
+        pass_filenames: false
+        groups: [check]
+        stages: [manual]
+
+      - id: build
+        name: Build sdist by uv
+        entry: uv build
+        language: system
+        pass_filenames: false
+        priority: 1
+        groups: [check]
+        stages: [manual]
+
+      - id: twine
+        name: Check sdist by twine
+        entry: uvx twine check dist/*
+        language: system
+        pass_filenames: false
+        priority: 2
+        groups: [check]
+        stages: [manual]

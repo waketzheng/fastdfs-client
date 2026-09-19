@@ -273,6 +273,7 @@ class StorageClient:
                     file_ext_name.encode(),
                 )
             tcp_send_data(store_conn, send_buffer)
+            send_file_size = 0
             if upload_type == FDFS_UPLOAD_BY_FILENAME:
                 send_file_size = tcp_send_file(store_conn, file_buffer)
             elif upload_type == FDFS_UPLOAD_BY_BUFFER:
@@ -305,18 +306,21 @@ class StorageClient:
                         tracker_client, store_serv, remote_filename
                     )
                     raise DataError("[-] Error: %d, %s" % (status, os.strerror(status)))
+        remote_file_id = (
+            group_name.strip(b"\x00") + __os_sep__.encode() + remote_filename
+        )
+        if upload_type in (FDFS_UPLOAD_BY_FILENAME, FDFS_UPLOAD_BY_FILE):
+            local_file_name = file_buffer
+            uploaded_size = appromix(send_file_size)
+        else:
+            local_file_name = ""
+            uploaded_size = (appromix(len(file_buffer)),)
         ret_dic = {
             "Group name": group_name.strip(b"\x00"),
-            "Remote file_id": group_name.strip(b"\x00")
-            + __os_sep__.encode()
-            + remote_filename,
+            "Remote file_id": remote_file_id,
             "Status": "Upload successed.",
-            "Local file name": file_buffer
-            if upload_type in (FDFS_UPLOAD_BY_FILENAME, FDFS_UPLOAD_BY_FILE)
-            else "",
-            "Uploaded size": appromix(send_file_size)
-            if upload_type in (FDFS_UPLOAD_BY_FILENAME, FDFS_UPLOAD_BY_FILE)
-            else appromix(len(file_buffer)),
+            "Local file name": local_file_name,
+            "Uploaded size": uploaded_size,
             "Storage IP": store_serv.ip_addr,
         }
         self._auto_decode_bytes(ret_dic)
@@ -654,19 +658,18 @@ class StorageClient:
             #    (store_serv.group_name + __os_sep__.encode() + remote_filename))
             if th.status != 0:
                 raise DataError("Error: %d %s" % (th.status, os.strerror(th.status)))
+            recv_buffer, total_recv_size = b"", 0
             if download_type == FDFS_DOWNLOAD_TO_FILE:
                 total_recv_size = tcp_recv_file(store_conn, file_buffer, th.pkg_len)
             elif download_type == FDFS_DOWNLOAD_TO_BUFFER:
                 recv_buffer, total_recv_size = tcp_recv_response(store_conn, th.pkg_len)
         finally:
             self.pool.release(store_conn)
+        remote_file_id = store_serv.group_name + __os_sep__.encode() + remote_filename
+        content = file_buffer if download_type == FDFS_DOWNLOAD_TO_FILE else recv_buffer
         ret_dic = {
-            "Remote file_id": store_serv.group_name
-            + __os_sep__.encode()
-            + remote_filename,
-            "Content": file_buffer
-            if download_type == FDFS_DOWNLOAD_TO_FILE
-            else recv_buffer,
+            "Remote file_id": remote_file_id,
+            "Content": content,
             "Download size": appromix(total_recv_size),
             "Storage IP": store_serv.ip_addr,
         }

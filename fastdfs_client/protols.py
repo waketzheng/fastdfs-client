@@ -3,12 +3,9 @@ import struct
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
-from .exceptions import ConnectionError, DataError, FDFSError
+import anyio
 
-try:
-    import anyio
-except ImportError:
-    anyio = None  # type:ignore[assignment]
+from .exceptions import ConnectionError, DataError
 
 # define FDFS protol constans
 TRACKER_PROTO_CMD_STORAGE_JOIN = 81
@@ -182,12 +179,7 @@ class StorageServer:
     async def connect_tcp(self):
         if isinstance(ip_addr := self.ip_addr, bytes):
             ip_addr = ip_addr.decode()
-        try:
-            connection = anyio.connect_tcp(ip_addr, self.port)
-        except AttributeError:
-            raise FDFSError(
-                "'anyio' is required! You may need to run: `pip install anyio`"
-            ) from None
+        connection = anyio.connect_tcp(ip_addr, self.port)
         async with await connection as client:
             yield client
 
