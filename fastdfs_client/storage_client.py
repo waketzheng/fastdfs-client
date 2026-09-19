@@ -311,10 +311,10 @@ class StorageClient:
         )
         if upload_type in (FDFS_UPLOAD_BY_FILENAME, FDFS_UPLOAD_BY_FILE):
             local_file_name = file_buffer
-            uploaded_size = appromix(send_file_size)
         else:
             local_file_name = ""
-            uploaded_size = (appromix(len(file_buffer)),)
+            send_file_size = len(file_buffer)
+        uploaded_size = appromix(send_file_size)
         ret_dic = {
             "Group name": group_name.strip(b"\x00"),
             "Remote file_id": remote_file_id,

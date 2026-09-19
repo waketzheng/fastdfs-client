@@ -12,10 +12,6 @@ FastDFS Python client
 
 **English** | [中文](./README.zh.md)
 
-## 🚨 WARNING: DEPRECATED 🚨
-
-This project is deprecated. You should not use it. And if you use it for existing libraries, you should migrate to other projects.
-
 ## Motivation
 
 Base on:
@@ -38,9 +34,8 @@ fdfs_client.exceptions.ResponseError: [-] Error: Tracker response length is inva
 
 ## Requires
 
-- Python3.9+ (No other dependence)
-
-For Python3.8, use https://github.com/waketzheng/fastdfs-client-python/tree/1.0.1
+- Python3.10+
+- anyio
 
 ## Install
 

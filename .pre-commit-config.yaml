@@ -26,6 +26,12 @@ repos:
         language: system
         types: [python]
 
+      - id: pypi
+        name: ensure pypi for uv lock
+        files: 'uv.lock'
+        entry: pdm run fast pypi --slim
+        language: system
+
       - id: ty-check
         name: check type hints by ty
         entry: pdm run ty check

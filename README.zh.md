@@ -6,10 +6,10 @@ FastDFS的Python客户端，支持最新版V6.12（截至2024.05.15）
 
 [English](./README.md) | **中文**
 
-## 🚨 WARNING: DEPRECATED 🚨
+## 重启项目
 
-2025-03-28
-项目已停止维护，建议有储存需求的，采用其它工具。（BTW：minio是一个不错的选择，很容易上手）
+2025-03-28 项目停止维护，因为minio对python的支持更好，装起来也更方便
+2026-09-19 重新激活项目，因为看冯若航的公众号发现minio跑路了，而fastdfs一直还在活跃着
 
 ## 安装
 
@@ -69,7 +69,7 @@ print(ret)
 3. 修复了已知的[TypeError](https://blog.csdn.net/jaket5219999/article/details/138918672)和[ResponseError](https://github.com/happyfish100/fastdfs/issues/679#issuecomment-1872550057)错误
 4. 使用[ruff](https://github.com/astral-sh/ruff)进行格式化和导入排序
 5. 部分函数增加了类型注解，所有代码均通过mypy检查
-6. 增加了client.upload_as_url函数，支持上传二进制后返回完整URL
+6. 增加了`client.upload_as_url`函数，支持上传二进制后返回完整URL
 7. 扩展了FastdfsClient类的初始化，[直接传IP地址即可](./examples/init_with_ip.py)，无需传入.conf文件
 8. 支持异步(asyncio/trio)的方式上传和删除文件
 

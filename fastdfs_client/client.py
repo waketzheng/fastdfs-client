@@ -68,9 +68,9 @@ def get_tracker_conf(conf_path="client.conf") -> dict:
             for tr in tracker_list:
                 tracker_ip, tracker_port = tr.split(":")
                 tracker_ip_list.append(tracker_ip)
-            if tracker_port is None:
-                raise ValueError("'tracker_server' can not be empty list")
         tracker["host_tuple"] = tuple(tracker_ip_list)
+        if tracker_port is None:
+            raise ValueError("'tracker_server' can not be empty list")
         tracker["port"] = int(tracker_port)
         tracker["timeout"] = timeout
         tracker["name"] = "Tracker Pool"
