@@ -7,6 +7,7 @@
 - Drop support for Python3.9
 - Migrate from poetry to uv
 - Requires anyio
+- Support `just && just lint` for development
 
 ## 1.2
 
