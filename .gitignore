@@ -161,3 +161,4 @@ cython_debug/
 
 # Temp file
 tracker.conf
+.pdm-python
