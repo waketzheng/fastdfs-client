@@ -1,8 +1,8 @@
 # fastdfs-client
 
-FastDFS的Python客户端，支持最新版V6.12（截至2024.05.15）
+FastDFS的Python客户端，支持异步协程(async/await)，V6.12版测试通过
 
-要求Python3.9+
+要求Python3.10+
 
 [English](./README.md) | **中文**
 
@@ -14,10 +14,24 @@ FastDFS的Python客户端，支持最新版V6.12（截至2024.05.15）
 ## 安装
 
 ```bash
-pip install fastdfs-client
+uv pip install fastdfs-client
 ```
 
 ## 使用
+```py
+from pathlib import Path
+from fastdfs_client import FastdfsClient
+
+client = FastdfsClient(["dfs.waketzheng.top"])
+url = await client.upload(Path("test.txt").read_bytes())
+print(url)
+# https://dfs.waketzheng.top/group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.jpg
+
+ret = await client.delete(url)
+print(ret)
+# ('Delete file successed.', b'group1/M00/00/1B/eE0vIWaU9kyAVILJAAHM-px7j44359.jpg', b'120.77.47.33')
+```
+## 同步的方式
 
 ```py
 from fastdfs_client import FastdfsClient
@@ -49,15 +63,6 @@ print(url)
 - 删除某个文件
 ```py
 ret = client.delete_file(url)
-print(ret)
-# ('Delete file successed.', b'group1/M00/00/1B/eE0vIWaU9kyAVILJAAHM-px7j44359.jpg', b'120.77.47.33')
-```
-## 异步的方式
-```py
-url = await client.upload(Path("test.txt").read_bytes())
-print(url)
-# https://dfs.waketzheng.top/group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.jpg
-ret = await client.delete(url)
 print(ret)
 # ('Delete file successed.', b'group1/M00/00/1B/eE0vIWaU9kyAVILJAAHM-px7j44359.jpg', b'120.77.47.33')
 ```

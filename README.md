@@ -6,7 +6,7 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/pre-commit/pre-commit/main.svg)](https://github.com/pre-commit/pre-commit)
 [![GithubActionResult](https://github.com/waketzheng/fastdfs-client/workflows/ci/badge.svg)](https://github.com/waketzheng/fastdfs-client/actions?query=workflow:ci)
 
-FastDFS Python client
+FastDFS Python client with async/await support.
 
 *Manual pass upload test with fastdfs v6.12.1*
 
@@ -45,6 +45,27 @@ pip install fastdfs-client
 
 ## Usage
 
+### AsyncIO/Trio
+- upload
+```py
+from pathlib import Path
+from fastdfs_client import FastdfsClient
+
+client = FastdfsClient(["dfs.waketzheng.top"])
+p = Path("tests/test_async_client.py")
+url = await client.upload(p.read_bytes(), p.suffix)
+print(url)
+# https://dfs.waketzheng.top/group1/M00/00/00/xxx.py
+```
+- delete
+```py
+url = "https://dfs.waketzheng.top/group1/M00/00/00/xxx.py"
+resp = await client.delete(url)
+print(resp)
+# ('Delete file successed.', b'group1/M00/00/1B/eE0vIWaU9kyAVILJAAHM-px7j44359.py', b'120.77.47.33')
+```
+
+### Sync
 ```py
 from fastdfs_client import FastdfsClient
 
@@ -63,8 +84,6 @@ print(ret)
     "Storage IP": "192.168.243.133"
 }
 ```
-
-## Advance
 
 - Upload as URL
 
@@ -89,24 +108,4 @@ id_or_url = (
 )
 # id_or_url = 'group1/M00/00/00/wKjzh0_xaR63RExnAAAaDqbNk5E1398.txt'
 client.delete_file(id_or_url)
-```
-
-## AsyncIO/Trio
-- upload
-```py
-from pathlib import Path
-from fastdfs_client import FastdfsClient
-
-client = FastdfsClient(["dfs.waketzheng.top"])
-p = Path("tests/test_async_client.py")
-url = await client.upload(p.read_bytes(), p.suffix)
-print(url)
-# https://dfs.waketzheng.top/group1/M00/00/00/xxx.py
-```
-- delete
-```py
-url = "https://dfs.waketzheng.top/group1/M00/00/00/xxx.py"
-resp = await client.delete(url)
-print(resp)
-# ('Delete file successed.', b'group1/M00/00/1B/eE0vIWaU9kyAVILJAAHM-px7j44359.py', b'120.77.47.33')
 ```
