@@ -52,7 +52,6 @@ repos:
         entry: uv build
         language: system
         pass_filenames: false
-        priority: 1
         groups: [check]
         stages: [manual]
 
@@ -61,6 +60,6 @@ repos:
         entry: uvx twine check dist/*
         language: system
         pass_filenames: false
-        priority: 2
+        priority: 20
         groups: [check]
         stages: [manual]

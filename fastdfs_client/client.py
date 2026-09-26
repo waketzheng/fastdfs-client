@@ -5,9 +5,10 @@ import os
 import random
 import re
 import socket
+from collections.abc import Sequence
 from functools import cached_property
 from pathlib import Path
-from typing import Annotated, TypedDict, cast, get_type_hints
+from typing import Annotated, Any, TypedDict, cast, get_type_hints
 
 from .connection import ConnectionPool
 from .exceptions import ConfigError, DataError, ResponseError
@@ -82,8 +83,8 @@ def get_tracker_conf(conf_path="client.conf") -> dict:
 
 TrackersConfType = (
     Annotated[str | Path, "filename of trackers.conf"]
-    | Annotated[dict | ConfigDict, "Config of trackers"]
-    | Annotated[tuple[str, ...] | list[str], "IP list or domain list"]
+    | Annotated[dict[str, Any] | ConfigDict, "Config of trackers"]
+    | Annotated[Sequence[str], "IP list or domain list"]
 )
 
 
